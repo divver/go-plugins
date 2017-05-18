@@ -42,11 +42,15 @@ func createPath(path string, data []byte, client *zk.Conn) error {
 	name := "/"
 	p := strings.Split(path, "/")
 
-	for _, v := range p[1 : len(p)-1] {
+	for i, v := range p[1 : len(p)-1] {
 		name += v
 		e, _, _ := client.Exists(name)
 		if !e {
-			_, err = client.Create(name, []byte{}, int32(0), zk.WorldACL(zk.PermAll))
+			flag := int32(0)
+			if i == len(p)-1 {
+				flag = zk.FlagEphemeral
+			}
+			_, err = client.Create(name, []byte{}, flag, zk.WorldACL(zk.PermAll))
 			if err != nil {
 				return err
 			}
